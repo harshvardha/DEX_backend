@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
-const helmet = require("helmet");
 const { StatusCodes } = require("http-status-codes");
 const TokenRoutes = require("./routes/TokenRoutes");
 require("dotenv").config();
@@ -13,7 +12,6 @@ app.use(express.json());
 app.use(cors({
     origin: "*"
 }));
-app.use(helmet());
 app.use(morgan("common"));
 
 app.use("/token", TokenRoutes);
