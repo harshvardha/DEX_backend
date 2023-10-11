@@ -10,14 +10,15 @@ Moralis.start({
 
 const getTokenPrices = async (req, res, next) => {
     try {
-        const { contractAddress } = req.query;
-        const chain = EvmChain.ETHEREUM;
+        const { contractAddress, chainId } = req.query;
+        const chain = chainId === "0x1" ? EvmChain.ETHEREUM : EvmChain.POLYGON;
         const tokenInfo = await Moralis.EvmApi.token.getTokenPrice({
             address: contractAddress,
             chain
         });
         res.status(StatusCodes.OK).json(tokenInfo);
     } catch (error) {
+        console.log(error);
         next(new CustomError(error.details.status, error.details.response.data.message));
     }
 }
