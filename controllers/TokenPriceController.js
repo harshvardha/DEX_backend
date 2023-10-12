@@ -1,25 +1,28 @@
-const Moralis = require("moralis").default;
-const { EvmChain } = require("@moralisweb3/common-evm-utils");
+const axios = require("axios");
 const { StatusCodes } = require("http-status-codes");
 const CustomError = require("../errors/CustomError");
 require("dotenv").config();
 
-Moralis.start({
-    apiKey: process.env.MORALIS_API_KEY
-});
-
 const getTokenPrices = async (req, res, next) => {
     try {
-        const { contractAddress, chainId } = req.query;
-        const chain = chainId === "0x1" ? EvmChain.ETHEREUM : EvmChain.POLYGON;
-        const tokenInfo = await Moralis.EvmApi.token.getTokenPrice({
-            address: contractAddress,
-            chain
-        });
-        res.status(StatusCodes.OK).json(tokenInfo);
+        const { tokenToSellAddress, tokenToBuyAddress, amount, chainId } = req.query;
+        let chain;
+        switch (chainId) {
+            case "0x1":
+                chain = 1;
+                break;
+            case "0x89":
+                chain = 137;
+                break;
+            default:
+                console.log("invalid chain id");
+                break;
+        }
+        const tokenInfo = await axios.get(`https://api-dzap.1inch.io/v5.2/${chain}/quote?src=${tokenToSellAddress}&dst=${tokenToBuyAddress}&amount=${amount}`);
+        res.status(StatusCodes.OK).json(tokenInfo.data);
     } catch (error) {
         console.log(error);
-        next(new CustomError(error.details.status, error.details.response.data.message));
+        next(new CustomError(error.data.statusCode, error.data.description));
     }
 }
 
